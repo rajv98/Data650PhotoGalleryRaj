@@ -1,0 +1,249 @@
+<html>
+<head>
+    <title>
+        Image Gallery 
+    </title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="lightbox.min.css">
+    <script type="text/javascript" src="lightbox-plus-jquery.min.js"></script>
+
+
+    <script>
+
+        function hideUserNameAndLoad(){
+            var submitUserName = document.getElementById("submitUserName");
+            var userNameField = document.getElementById("username");
+            var uploadImage = document.getElementById("uploadImage");
+            var images = document.getElementById("images");
+            var loggedInAs = document.getElementById("loggedInAs");
+            var selectTopic = document.getElementById("selectTopic");
+
+            loggedInAs.innerHTML = "Logged in as: "+userNameField.value;
+
+            submitUserName.style.display = "none";
+            uploadImage.style.display = "block";
+            images.style.display = "block";
+            loggedInAs.style.display = "block";
+            selectTopic.style.display = "block";
+
+            loadImage();
+            loadTopics();
+        }
+
+
+        function loadImage(){ 
+            
+                //console.log(fetch("https://2id98aet46.execute-api.us-east-1.amazonaws.com/dev"))
+                    var myHeaders = new Headers();
+
+                    myHeaders.append("Content-Type", "application/json");
+                    var selectTopic = document.getElementById("topics").value;
+                    var raw = JSON.stringify({"topic":selectTopic});
+                    
+                    var requestOptions = {
+                        method: 'POST',
+                        headers: myHeaders,
+                        body: raw,
+                        redirect: 'follow'
+                    };
+
+                    fetch("https://jdai7tw9u5.execute-api.us-east-1.amazonaws.com/dev",requestOptions)
+                        .then( response => response.json())
+                        .then( data => {
+                           
+                            var url = data.url_list;
+                            var details = data.details;
+
+                            console.log("loadImage: ");
+                            console.log(details);
+                            var imgTag = document.getElementById("images");
+                            imgTag.innerHTML = "";
+                         
+                            for(var i = 0 ; i < url.length;i++){                 
+                                
+                                var photoUrl = details[i].photoid;
+                                var username = details[i].username;
+                                var topic = details[i].topic;
+                                var timestamp = details[i].timestamp;
+
+                                //console.log(photoUrl);
+
+                               // imgTag.innerHTML+= "<a href = \""+url[i]+"\" data-lightbox=\"mygallery\" data-title=\" "+topic+"\"> <img src = \""+url[i]+"\" >  </a>";                                                                  
+                                //imgTag.innerHTML+= "<input id=\""+url[i]+"\"class=\"delete\" type=\"button\" value=\"Delete\" onclick=\"deleteImage('"+url[i]+"')\"  />" ;  
+
+                                 imgTag.innerHTML+= "<a href = \""+photoUrl+"\" data-lightbox=\"mygallery\" data-title=\" '"+topic+"' &nbsp &nbsp   Uploaded by: "+username+" &nbsp &nbsp Timestamp: "+timestamp+" \"> <img src = \""+photoUrl+"\" >  </a>";                                                                  
+                                 imgTag.innerHTML+= "<input id=\""+photoUrl+"\"class=\"delete\" type=\"button\" value=\"Delete\" onclick=\"deleteImage('"+photoUrl+"')\"  />" ;          
+                            }          
+                            
+                            //var x = onclick=\"deleteImage(\""+url[i]+"\")\"
+                          
+                        });
+        }
+
+       
+
+        //window.onload=loadImage;
+    </script>
+
+    
+    <body>
+        <h1>
+           Raj's Image Gallery
+        <!--    <button type="button" onclick="loadImage()">Load image</button> -->
+        </h1>
+        <h3 id = "submitUserName">
+            Submit Username to View Images: &nbsp <input id="username" type="text" placeholder="Enter Username" /> 
+            <button id="userSubmit" type="submit" onclick="hideUserNameAndLoad()">Submit</button>
+        </h3>
+        <h3 id = "loggedInAs">
+            
+        </h3>
+        
+        <h3 id = "selectTopic">
+            <button id="refresh" onclick="refreshPage()">Refresh Page</button>&nbsp &nbsp 
+            Select Topic to Filter By:  &nbsp 
+            <select id="topics" onchange="loadImage()">
+            </select> 
+           
+
+        </h3>
+
+        <form id="uploadImage"> 
+            Enter a Topic and Upload an Image:&nbsp &nbsp <input id="caption" type="text" placeholder="Image Topic" /> &nbsp &nbsp
+            <input id="fileinput" type="file" />
+            <button id="sub" type="submit">Upload File</button>
+            
+        </form>
+        
+
+            
+        
+        <div id="images" class = "container">
+        <!--    
+            <input type="image" title="Click to upload a photo!" src ="upload.png" width="50" height="50" accept="image/.png, image/.jpg"> 
+            --->
+        </div>
+
+
+    </body>
+</head>
+
+<script>
+
+    var submit = document.getElementById("uploadImage");
+
+    const fileInput = document.getElementById("fileinput");
+    //const submit = document.getElementById("sub");
+
+    submit.addEventListener("submit",e=>{
+        e.preventDefault();
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        const caption = document.getElementById("caption").value;
+        const currUserName = document.getElementById("username").value;
+        console.log("caption:   "+caption);
+        reader.readAsDataURL(file);
+        reader.addEventListener("load", () => {
+
+            var base64 = reader.result;
+            var myHeaders = new Headers();
+
+            myHeaders.append("Content-Type", "application/json");
+            var raw = JSON.stringify({"imageBase64":base64,"caption":caption,"username":currUserName});
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+
+            fetch("https://ozj1ddrw6b.execute-api.us-east-1.amazonaws.com/dev", requestOptions)
+            .then(response => response.json())
+            .then(data => console.log("upload Image: "+data));
+
+            
+            setTimeout(loadImage, 2000);
+            setTimeout(loadTopics, 1000);
+
+        });
+
+        
+
+        //console.log(file);
+    });
+function refreshPage(){
+    loadImage();
+    loadTopics();
+}
+
+function deleteImage(imageUrl){
+   
+    var fileName = imageUrl.split("/")[imageUrl.split("/").length-1];
+
+    var myHeaders = new Headers();
+
+    myHeaders.append("Content-Type", "application/json");
+
+    var raw = JSON.stringify({"fileName":fileName,"Hrenlo":"hrey"});
+
+    var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw
+            };
+
+    fetch("https://qyhn1jgzcf.execute-api.us-east-1.amazonaws.com/dev",requestOptions)
+             .then(response => response.json())
+             .then(data => console.log("deleteImage:"+data));
+
+    //console.log(fileName);
+    setTimeout(loadImage, 1500);
+    setTimeout(loadTopics, 3000);
+}
+
+function loadTopics(){
+            var myHeaders = new Headers();
+
+            myHeaders.append("Content-Type", "application/json");
+            var selectTopic = document.getElementById("topics").value;
+            var raw = JSON.stringify({"Request":"Req"});
+            var topicSelect = document.getElementById('topics')
+
+            while (topicSelect.options.length > 0) {                
+                topicSelect.remove(0);
+            }   
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+            
+            fetch("https://f55x8sxur7.execute-api.us-east-1.amazonaws.com/dev",requestOptions)
+            .then(response => response.json())
+            .then(data => {
+
+                
+                var topicList = data.topicList
+                console.log("loadtopic:" +topicList);
+                topicSelect.options.add(new Option("", ""));
+
+                for(var i = 0 ; i < topicList.length; i++){
+                    if(topicList[i]!=("")){
+                     topicSelect.options.add(new Option(topicList[i], topicList[i]));
+                    }
+                }
+
+                
+            }
+            );
+
+            
+        }
+
+</script>
+
+
+</html>
