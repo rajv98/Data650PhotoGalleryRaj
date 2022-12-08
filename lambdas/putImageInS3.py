@@ -31,9 +31,7 @@ def lambda_handler(event, context):
     
     decoded_image = base64.b64decode(imgBase)
     
-    # store the current time in a human readable format in a variable
-  #  nowFileName = strftime("%d%b%Y%H_%M_%S", gmtime())
-   # nowDb = strftime("%d %b %Y %H:%M:%S", gmtime())
+
     
     # get current time
     now= datetime.datetime.now()
